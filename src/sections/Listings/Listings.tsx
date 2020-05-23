@@ -50,11 +50,7 @@ export const Listings = ({ title }: Props) => {
       },      
     };
 
-    const { data } = await server.fetch<
-      DeleteListingData,
-      DeleteListingVariables
-    >(deleteBody);
-
+    const { data } = await server.fetch<DeleteListingData, DeleteListingVariables>(deleteBody);
     console.log(data);
   };
 
