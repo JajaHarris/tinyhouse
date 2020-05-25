@@ -1,5 +1,5 @@
 import React from 'react';
-import { server, Body } from '../../lib/api';
+import { useQuery, useMutation } from '../../lib/api';
 import {
   ListingsData,
   DeleteListingData,
@@ -35,35 +35,58 @@ interface Props {
 }
 
 export const Listings = ({ title }: Props) => {
-  const fetchListings = async () => {
-    const { data } = await server.fetch<ListingsData>({
-      query: LISTINGS_QUERY,
-    });
-    console.log(data.listings);
+  const { data, refetch, loading, error } = useQuery<ListingsData>(
+    LISTINGS_QUERY
+  );
+  
+  const [
+    deleteListing,
+    { loading: loadingForDelete, error: errorForDelete },
+  ] = useMutation<DeleteListingData, DeleteListingVariables>(
+    DELETE_LISTING_QUERY
+  );
+
+  const onDeleteListing = async (id: string) => {
+    await deleteListing({id});
+    refetch();
   };
 
-  const deleteListing = async () => {
-    const deleteBody: Body<DeleteListingVariables> = {
-      query: DELETE_LISTING_QUERY,
-      variables: {
-        id: '5ec81b982bca25a266a96a8a',
-      },      
-    };
+  const listings = data ? data.listings : null;
 
-    const { data } = await server.fetch<DeleteListingData, DeleteListingVariables>(deleteBody);
-    console.log(data);
-  };
+  const listingSection = listings ? (
+    <ul>
+      {listings.map((listing) => {
+        return (
+          <li key={listing.id}>
+            {listing.title}
+            <button onClick={() => onDeleteListing(listing.id)}>Delete</button>
+          </li>
+        );
+      })}
+    </ul>
+  ) : null;
+
+  if (loading) {
+    return <h2>Loading...</h2>;
+  }
+
+  if (error) {
+    return <h2>Oops...something went wrong - try again later</h2>;
+  }
+
+  const deleteProcessingElement = loadingForDelete
+    ? <h4>Deletion in progress</h4> : null;
+
+  const deleteErrorElement = errorForDelete
+    ? <h4>Uh oh! Something went wrong with deleting - try again later</h4>
+    : null;
 
   return (
     <div>
       <h2>{title}</h2>
-      <div>
-        <button onClick={fetchListings}>Query Listings!</button>
-      </div>
-
-      <div>
-        <button onClick={deleteListing}>Delete Listings!</button>
-      </div>
+      {listingSection}
+      {deleteProcessingElement}
+      {deleteErrorElement}
     </div>
   );
 };

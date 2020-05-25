@@ -1,4 +1,4 @@
-interface Listing {
+export interface Listing {
   id: string;
   title: string;
   image: string;
@@ -20,4 +20,10 @@ export interface DeleteListingData {
 
 export interface DeleteListingVariables {
   id: string;
+}
+
+export interface State<TData> {
+  data: TData | null;
+  loading: boolean;
+  error: boolean;
 }
